@@ -1,46 +1,45 @@
-import { Search, Heart, Flame, MessageCircle, Eye, Home, Star, Users, Bookmark, Plus, LayoutGrid, Zap, Settings2, Youtube, Send } from 'lucide-react';
-import './styles.css';
-import { Metadata } from 'next';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'Learnifiy - Dashboard',
-};
+import { useEffect, useState } from "react";
+import { Search, Heart, Flame, MessageCircle, Eye, Home, Star, Users, Bookmark, Plus, LayoutGrid, Zap, Settings2, Youtube, Send, Loader2 } from 'lucide-react';
+import './styles.css';
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import Image from "next/image";
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail_url: string;
+  created_at: string;
+  // author and reactions are placeholder for now as they aren't in the schema yet
+}
 
 export default function Dashboard() {
-  const cards = [
-    {
-      title: "24 ta yangi reliz yanvar va fevral oylari uchun",
-      author: "Screen Gallery",
-      description: "Har hafta biz Screen Gallery-ga yangi ilovalarni qo'shamiz. 2026-yil boshidan...",
-      meta: "Maqola · 12 soat avval",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80",
-      reactions: { heart: 2, fire: 1, comment: 2, bookmark: 1, view: 332 }
-    },
-    {
-      title: "Jamoaning foydali rivojlanishi",
-      author: "Delimobil",
-      description: "Salom! Men Kolya Dimovman, dizayn bo'limini boshqaraman...",
-      meta: "Maqola · 13 soat avval",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-      reactions: { heart: 1, fire: 3, comment: 4, view: 460 }
-    },
-    {
-      title: "Zanjirli reaksiya: qanday qilib bitta mexanika millionlab mijozlarni Alfa xizmatlari bilan bog'ladi...",
-      author: "REB8T DIGITAL STUDIO",
-      description: "Hammaga salom! REB8T — raqamli aloqa kanallarida...",
-      meta: "Keys · 14 soat avval",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
-      reactions: { heart: 3, fire: 1, comment: 1, bookmark: 5, view: 435 }
-    },
-    {
-      title: "Nima uchun muvaffaqiyatsiz bo'lish foydali",
-      author: "Dasha Kupsova",
-      description: "Autsayder ko'proq o'zi bilmagan narsalarga rozi bo'ladi. Qachonki yirik xalqaro brend so'rasa...",
-      meta: "Maqola · o'tgan kuni",
-      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-      reactions: { heart: 2, view: 579 }
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        console.log("Fetched courses:", data);
+        setCourses(data || []);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+
+    fetchCourses();
+  }, []);
 
   return (
     <>
@@ -60,7 +59,9 @@ export default function Dashboard() {
             <input type="text" placeholder="Qidirmoq" />
           </div>
           <div className="navbar-actions">
-            <button className="btn-create">Yaratish <Plus size={18} /></button>
+            <Link href="/upload">
+              <button className="btn-create">Yaratish <Plus size={18} /></button>
+            </Link>
             <button className="btn-login">Kirish</button>
           </div>
         </header>
@@ -104,33 +105,52 @@ export default function Dashboard() {
 
           <main className="content-area">
             <div className="feed-grid">
-              {cards.map((card, idx) => (
-                <article key={idx} className="post-card">
-                  <div className="post-image" style={{ backgroundImage: `url(${card.image})` }}>
-                    <div className="post-badge">Maqola</div>
-                  </div>
-                  <div className="post-content">
-                    <div className="post-author-row">
-                      <div className="author-avatar" style={{ backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#F333FF'][idx % 4] }}></div>
-                      <div className="author-details">
-                        <span className="author-name">{card.author}</span>
-                        <span className="post-meta">{card.meta}</span>
-                      </div>
-                      <button className="btn-follow">Obuna bo'lish</button>
-                    </div>
-                    <h2 className="post-title">{card.title}</h2>
-                    <p className="post-excerpt">{card.description}</p>
-                    <div className="post-footer">
-                      <div className="post-stats">
-                        <div className="stat-item"><Heart size={16} /> <span>{card.reactions.heart}</span></div>
-                        <div className="stat-item"><Flame size={16} /> <span>{card.reactions.fire}</span></div>
-                        <div className="stat-item"><MessageCircle size={16} /></div>
-                      </div>
-                      <div className="stat-item views"><Eye size={16} /> <span>{card.reactions.view}</span></div>
-                    </div>
-                  </div>
-                </article>
-              ))}
+              {loading ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-neutral-500 gap-4">
+                  <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+                  <p>Kurslar yuklanmoqda...</p>
+                </div>
+              ) : courses.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-neutral-500 gap-4 border-2 border-dashed border-neutral-800 rounded-3xl">
+                  <Youtube className="w-12 h-12 opacity-20" />
+                  <p>Hozircha kurslar yo'q. Birinchisini yaratasizmi?</p>
+                  <Link href="/upload">
+                    <button className="btn-create">Kurs yaratish</button>
+                  </Link>
+                </div>
+              ) : (
+                courses
+                  .filter(course => !course.id.startsWith("http")) // Filter out broken records
+                  .map((course, idx) => (
+                    <Link
+                      href={`/course/${course.id}`}
+                      key={course.id}
+                      className="block outline-none focus:ring-2 focus:ring-blue-500 rounded-3xl"
+                    >
+                      <article className="post-card hover:border-blue-500/50 transition-all cursor-pointer h-full overflow-hidden flex flex-col">
+                        <div className="post-image-container relative w-full aspect-video">
+                          <Image
+                            src={course.thumbnail_url}
+                            alt={course.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            priority={idx < 4}
+                          />
+                          <div className="post-badge absolute top-3 left-3 z-10">Kurs</div>
+                        </div>
+                        <div className="post-content flex-grow">
+                          <h2 className="post-title">{course.title}</h2>
+                          <p className="post-excerpt">{course.description}</p>
+                          <div className="post-card-footer">
+                            <span className="post-date">{new Date(course.created_at).toLocaleDateString()}</span>
+                            <div className="stat-item views ml-auto"><Eye size={14} className="opacity-50" /> <span>0</span></div>
+                          </div>
+                        </div>
+                      </article>
+                    </Link>
+                  ))
+              )}
             </div>
 
             <div className="floating-toggle">
