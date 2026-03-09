@@ -5,6 +5,9 @@ import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
 import { supabase } from "@/lib/supabase";
 import { Plus, Trash2, Video, Image as ImageIcon, Loader2, Youtube, Link as LinkIcon } from "lucide-react";
 import { isYouTubeUrl } from "@/lib/videoUtils";
+import { Logo } from "@/components/Logo";
+import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Lesson {
     title: string;
@@ -18,6 +21,36 @@ export default function UploadPage() {
     const [lessons, setLessons] = useState<Lesson[]>([{ title: "", videoUrl: "" }]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const { user, loading: authLoading, setModalOpen } = useAuth();
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-8 text-center space-y-8">
+                <Logo className="mb-8" />
+                <div className="space-y-4 max-w-md">
+                    <h1 className="text-3xl font-black tracking-tight">Kirish ruxsat etilmagan</h1>
+                    <p className="text-text-muted font-medium">Kurs yaratish uchun tizimga kirishingiz kerak. Iltimos, hisobingizga kiring yoki ro'yxatdan o'ting.</p>
+                </div>
+                <button
+                    onClick={() => setModalOpen(true)}
+                    className="h-14 px-10 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all active:scale-[0.95]"
+                >
+                    Kirish / Ro'yxatdan o'tish
+                </button>
+                <Link href="/dashboard" className="text-sm font-bold text-text-muted hover:text-primary transition-colors underline">
+                    Bosh sahifaga qaytish
+                </Link>
+            </div>
+        );
+    }
 
     const addLesson = () => {
         setLessons([...lessons, { title: "", videoUrl: "" }]);
@@ -59,7 +92,7 @@ export default function UploadPage() {
             // 1. Insert Course
             const { data: course, error: courseError } = await supabase
                 .from("courses")
-                .insert([{ title, description, thumbnail_url: thumbnailUrl }])
+                .insert([{ title, description, thumbnail_url: thumbnailUrl, user_id: user.id }])
                 .select()
                 .single();
 
@@ -93,66 +126,70 @@ export default function UploadPage() {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white p-8">
-            <div className="max-w-4xl mx-auto space-y-12">
-                <header className="space-y-4">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                        Upload New Course
+        <div className="min-h-screen bg-background text-foreground font-inter antialiased">
+            <div className="max-w-4xl mx-auto px-8 py-12 space-y-12">
+                <header className="space-y-6 text-center">
+                    <Logo className="justify-center mb-8" />
+                    <h1 className="text-4xl font-black tracking-tight text-foreground">
+                        Yangi Kurs Yaratish
                     </h1>
-                    <p className="text-neutral-400">Create a premium learning experience by adding a course with multiple video parts.</p>
+                    <p className="text-text-muted font-medium max-w-2xl mx-auto">Kurs ma'lumotlarini kiriting va video darslarni yuklang. Bizning platformamizda eng yaxshi ta'lim tajribasini yarating.</p>
                 </header>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Internal Course Details */}
-                    <section className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-2xl space-y-6 backdrop-blur-sm">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold">1</span>
-                            Course Basics
+                    {/* Course Basics */}
+                    <section className="bg-surface border border-border/50 p-8 rounded-3xl space-y-8 shadow-sm">
+                        <h2 className="text-xl font-black flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-sm font-black">1</div>
+                            Asosiy Ma'lumotlar
                         </h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-neutral-400">Course Title</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Kurs nomi</label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                    placeholder="Enter a catchy title..."
+                                    className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-text-muted/40"
+                                    placeholder="Masalan: Next.js yordamida zamonaviy veb-ilovalar..."
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-neutral-400">Description</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Tavsif</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     rows={4}
-                                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                    placeholder="What is this course about?"
+                                    className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-text-muted/40 resize-none"
+                                    placeholder="Kurs haqida qisqacha ma'lumot bering..."
                                 />
                             </div>
                         </div>
                     </section>
 
                     {/* Thumbnail Section */}
-                    <section className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-2xl space-y-6 backdrop-blur-sm">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold">2</span>
-                            Visuals
+                    <section className="bg-surface border border-border/50 p-8 rounded-3xl space-y-8 shadow-sm">
+                        <h2 className="text-xl font-black flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-sm font-black">2</div>
+                            Vizual Ko'rinish
                         </h2>
 
                         <div className="space-y-4">
-                            <label className="text-sm font-medium text-neutral-400">Course Thumbnail</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Kurs Muqovasi (Thumbnail)</label>
                             {thumbnailUrl ? (
-                                <div className="relative group rounded-xl overflow-hidden border border-neutral-800 aspect-video max-w-md">
+                                <div className="relative group rounded-2xl overflow-hidden border border-border aspect-video max-w-md shadow-sm">
                                     <img src={thumbnailUrl} alt="Thumbnail preview" className="object-cover w-full h-full" />
-                                    <button
-                                        onClick={() => setThumbnailUrl("")}
-                                        className="absolute top-2 right-2 p-2 bg-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setThumbnailUrl("")}
+                                            className="p-3 bg-red-600 text-white rounded-xl shadow-lg hover:scale-105 transition-transform"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <UploadDropzone
@@ -163,124 +200,130 @@ export default function UploadPage() {
                                     onUploadError={(error: Error) => {
                                         alert(`ERROR! ${error.message}`);
                                     }}
-                                    className="border-dashed border-2 border-neutral-800 bg-neutral-900/30 ut-label:text-blue-400 ut-button:bg-blue-600 ut-button:ut-readying:bg-blue-500/50"
+                                    className="border-dashed border-2 border-border bg-background ut-label:text-primary ut-button:bg-primary ut-button:rounded-xl ut-button:font-bold ut-button:text-sm hover:bg-neutral-50 transition-colors"
                                 />
                             )}
                         </div>
                     </section>
 
                     {/* Lessons Section */}
-                    <section className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-2xl space-y-6 backdrop-blur-sm">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold flex items-center gap-2">
-                                <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">3</span>
-                                Course Parts (Videos)
+                    <section className="bg-surface border border-border/50 p-8 rounded-3xl space-y-8 shadow-sm">
+                        <div className="flex justify-between items-center px-1">
+                            <h2 className="text-xl font-black flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-green-500/10 text-green-600 flex items-center justify-center text-sm font-black">3</div>
+                                Video Darslar
                             </h2>
                             <button
                                 type="button"
                                 onClick={addLesson}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors text-sm font-medium"
+                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-blue-700 rounded-xl transition-all shadow-sm font-bold text-xs"
                             >
-                                <Plus className="w-4 h-4" /> Add Part
+                                <Plus className="w-4 h-4" /> Dars Qo'shish
                             </button>
                         </div>
 
                         <div className="space-y-6">
                             {lessons.map((lesson, index) => (
-                                <div key={index} className="p-6 bg-black border border-neutral-800 rounded-xl space-y-4 relative">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Part {index + 1}</span>
-                                        {lessons.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeLesson(index)}
-                                                className="text-neutral-500 hover:text-red-500 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-medium text-neutral-400">Part Title</label>
-                                            <input
-                                                type="text"
-                                                value={lesson.title}
-                                                onChange={(e) => updateLesson(index, "title", e.target.value)}
-                                                className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm"
-                                                placeholder="e.g. Introduction to Next.js"
-                                            />
+                                <div key={index} className="p-1 rounded-2xl border border-border/30 bg-background/50">
+                                    <div className="p-6 space-y-6">
+                                        <div className="flex justify-between items-center border-b border-border/20 pb-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black text-white bg-text-muted/40 px-2 py-0.5 rounded-md uppercase tracking-widest">QISM {index + 1}</span>
+                                            </div>
+                                            {lessons.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeLesson(index)}
+                                                    className="p-2 text-text-muted/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-xs font-medium text-neutral-400">Video Content</label>
-                                                <div className="flex bg-neutral-900 p-1 rounded-lg border border-neutral-800">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => updateLesson(index, "videoUrl", "")}
-                                                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all flex items-center gap-1 ${!isYouTubeUrl(lesson.videoUrl) ? 'bg-blue-600 text-white' : 'text-neutral-400 hover:text-white'}`}
-                                                    >
-                                                        <Video className="w-3 h-3" /> Upload
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => updateLesson(index, "videoUrl", "youtube:")}
-                                                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all flex items-center gap-1 ${isYouTubeUrl(lesson.videoUrl) || lesson.videoUrl.startsWith('youtube:') ? 'bg-red-600 text-white' : 'text-neutral-400 hover:text-white'}`}
-                                                    >
-                                                        <Youtube className="w-3 h-3" /> YouTube
-                                                    </button>
-                                                </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Dars Sarlavhasi</label>
+                                                <input
+                                                    type="text"
+                                                    value={lesson.title}
+                                                    onChange={(e) => updateLesson(index, "title", e.target.value)}
+                                                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                    placeholder="Masalan: Kirish qismi..."
+                                                />
                                             </div>
 
-                                            {lesson.videoUrl && !lesson.videoUrl.startsWith('youtube:') ? (
-                                                <div className="flex items-center gap-3 p-3 bg-neutral-900 rounded-xl border border-emerald-500/30">
-                                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                                        <Video className="w-4 h-4 text-emerald-400" />
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between px-1">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Video Kontent</label>
+                                                    <div className="flex bg-surface p-1 rounded-xl border border-border shadow-sm">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateLesson(index, "videoUrl", "")}
+                                                            className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all flex items-center gap-1.5 uppercase tracking-tight ${!isYouTubeUrl(lesson.videoUrl) ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-foreground'}`}
+                                                        >
+                                                            <Video className="w-3.5 h-3.5" /> Yuklash
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateLesson(index, "videoUrl", "youtube:")}
+                                                            className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all flex items-center gap-1.5 uppercase tracking-tight ${isYouTubeUrl(lesson.videoUrl) || lesson.videoUrl.startsWith('youtube:') ? 'bg-red-600 text-white shadow-sm' : 'text-text-muted hover:text-foreground'}`}
+                                                        >
+                                                            <Youtube className="w-3.5 h-3.5" /> YouTube
+                                                        </button>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-medium text-neutral-200 truncate">Video Uploaded</p>
-                                                        <p className="text-[10px] text-neutral-500 truncate">{lesson.videoUrl}</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => updateLesson(index, "videoUrl", "")}
-                                                        className="p-2 text-neutral-500 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
                                                 </div>
-                                            ) : (isYouTubeUrl(lesson.videoUrl) || lesson.videoUrl.startsWith('youtube:')) ? (
-                                                <div className="space-y-2">
-                                                    <div className="relative">
-                                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-                                                        <input
-                                                            type="text"
-                                                            value={lesson.videoUrl.startsWith('youtube:') ? "" : lesson.videoUrl}
-                                                            onChange={(e) => updateLesson(index, "videoUrl", e.target.value)}
-                                                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-red-500 transition-all text-sm"
-                                                            placeholder="Paste YouTube video link..."
+
+                                                <div className="pt-1">
+                                                    {lesson.videoUrl && !lesson.videoUrl.startsWith('youtube:') ? (
+                                                        <div className="flex items-center gap-4 p-4 bg-primary/[0.03] rounded-xl border border-primary/20 shadow-sm transition-all group">
+                                                            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shrink-0">
+                                                                <Video className="w-5 h-5" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-black text-foreground truncate uppercase tracking-tighter">Video Yuklandi</p>
+                                                                <p className="text-[10px] text-text-muted truncate font-medium">{lesson.videoUrl}</p>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateLesson(index, "videoUrl", "")}
+                                                                className="p-2 text-text-muted/30 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (isYouTubeUrl(lesson.videoUrl) || lesson.videoUrl.startsWith('youtube:')) ? (
+                                                        <div className="space-y-3">
+                                                            <div className="relative group">
+                                                                <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/40 group-focus-within:text-red-500 transition-colors" />
+                                                                <input
+                                                                    type="text"
+                                                                    value={lesson.videoUrl.startsWith('youtube:') ? "" : lesson.videoUrl}
+                                                                    onChange={(e) => updateLesson(index, "videoUrl", e.target.value)}
+                                                                    className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all placeholder:text-text-muted/30"
+                                                                    placeholder="YouTube linkini kiriting..."
+                                                                />
+                                                            </div>
+                                                            {isYouTubeUrl(lesson.videoUrl) && (
+                                                                <p className="text-[10px] font-black text-green-600 flex items-center gap-2 px-1 uppercase tracking-widest">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> To'g'ri YouTube linki
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <UploadButton
+                                                            endpoint="courseVideoUploader"
+                                                            onClientUploadComplete={(res) => {
+                                                                updateLesson(index, "videoUrl", res[0].url);
+                                                            }}
+                                                            onUploadError={(error: Error) => {
+                                                                alert(`ERROR! ${error.message}`);
+                                                            }}
+                                                            className="ut-button:bg-surface ut-button:text-foreground ut-button:border ut-button:border-border ut-button:text-xs ut-button:font-black ut-button:uppercase ut-button:tracking-widest ut-button:h-12 ut-button:w-full ut-button:rounded-xl hover:ut-button:bg-neutral-50 ut-allowed-content:hidden"
                                                         />
-                                                    </div>
-                                                    {isYouTubeUrl(lesson.videoUrl) && (
-                                                        <p className="text-[10px] text-emerald-400 flex items-center gap-1">
-                                                            <div className="w-1 h-1 rounded-full bg-emerald-400" /> Valid YouTube link detected
-                                                        </p>
                                                     )}
                                                 </div>
-                                            ) : (
-                                                <UploadButton
-                                                    endpoint="courseVideoUploader"
-                                                    onClientUploadComplete={(res) => {
-                                                        updateLesson(index, "videoUrl", res[0].url);
-                                                    }}
-                                                    onUploadError={(error: Error) => {
-                                                        alert(`ERROR! ${error.message}`);
-                                                    }}
-                                                    className="ut-button:bg-neutral-800 ut-button:text-sm ut-button:h-12 ut-button:w-full ut-button:rounded-xl hover:ut-button:bg-neutral-700"
-                                                />
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -289,17 +332,17 @@ export default function UploadPage() {
                     </section>
 
                     {/* Submit */}
-                    <div className="flex flex-col items-center gap-4 pt-4">
+                    <div className="flex flex-col items-center gap-4 pt-10">
                         <button
                             disabled={loading}
-                            className="w-full max-w-xs py-4 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 rounded-xl font-bold text-lg transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full max-w-sm h-16 bg-primary text-white hover:bg-blue-700 rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Course"}
+                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Kursni Chop Etish"}
                         </button>
                         {message && (
-                            <p className={`text-sm ${message.includes("Error") ? "text-red-400" : "text-emerald-400"}`}>
+                            <div className={`px-6 py-3 rounded-xl border text-sm font-bold ${message.includes("Error") ? "bg-red-50 border-red-100 text-red-600" : "bg-green-50 border-green-100 text-green-600"}`}>
                                 {message}
-                            </p>
+                            </div>
                         )}
                     </div>
                 </form>

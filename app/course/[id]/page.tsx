@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { ChevronLeft, Play, Clock, BookOpen, Loader2, ArrowLeft, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Logo } from "@/components/Logo";
 import { isYouTubeUrl, getYouTubeEmbedUrl } from "@/lib/videoUtils";
 
 interface Course {
@@ -90,31 +91,34 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     }
 
     return (
-        <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans antialiased">
+        <div className="min-h-screen bg-background text-foreground font-inter antialiased flex flex-col">
             {/* Header / Navigation */}
-            <nav className="border-b border-[#E6E8EC]/50 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
-                    <Link href="/dashboard" className="flex items-center gap-3 text-neutral-500 hover:text-[var(--primary)] transition-all group">
-                        <div className="w-10 h-10 rounded-xl bg-[#F0F4F9] flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <ChevronLeft className="w-5 h-5" />
-                        </div>
-                        <span className="font-semibold text-sm">Dashboardga qaytish</span>
-                    </Link>
-                    <div className="text-base font-bold text-neutral-800 truncate max-w-[400px]">
+            <nav className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50 h-20 shadow-sm">
+                <div className="max-w-[1440px] mx-auto px-8 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                        <Logo className="h-10" />
+                        <Link href="/dashboard" className="flex items-center gap-3 text-text-muted hover:text-primary transition-all group">
+                            <div className="w-8 h-8 rounded-lg bg-surface border border-border/50 flex items-center justify-center group-hover:border-primary/30 transition-all">
+                                <ChevronLeft className="w-4 h-4" />
+                            </div>
+                            <span className="font-bold text-xs">Dashboardga qaytish</span>
+                        </Link>
+                    </div>
+                    <div className="text-base font-black text-foreground truncate max-w-[400px]">
                         {course.title}
                     </div>
                     <div className="w-40 flex justify-end">
-                        <div className="px-4 py-2 bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold rounded-full">
+                        <div className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">
                             Kurs Ma'lumotlari
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <main className="max-w-[1440px] mx-auto px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
                 {/* Video Player Section */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="aspect-video bg-black rounded-[40px] overflow-hidden border border-[#E6E8EC] shadow-2xl shadow-blue-500/5 relative group">
+                    <div className="aspect-video bg-black rounded-3xl overflow-hidden border border-border shadow-md relative group">
                         {activeLesson ? (
                             isYouTubeUrl(activeLesson.video_url) ? (
                                 <iframe
@@ -145,16 +149,18 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                         )}
                     </div>
 
-                    <div className="space-y-6 px-4">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900">
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-black tracking-tight text-foreground leading-tight px-2">
                             {activeLesson?.title || course.title}
                         </h1>
-                        <div className="p-8 bg-white rounded-[32px] border border-[#E6E8EC] shadow-sm">
-                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                <BookOpen className="w-5 h-5 text-[var(--primary)]" />
+                        <div className="p-8 bg-surface rounded-3xl border border-border/50 shadow-sm">
+                            <h3 className="text-lg font-black mb-4 flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg">
+                                    <BookOpen className="w-5 h-5 text-primary" />
+                                </div>
                                 Kurs Tavsifi
                             </h3>
-                            <p className="text-[#6F767E] leading-relaxed text-base">
+                            <p className="text-text-muted leading-relaxed text-base font-medium">
                                 {course.description}
                             </p>
                         </div>
@@ -163,50 +169,50 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
                 {/* Playlist / Lesson List Section */}
                 <div className="space-y-8">
-                    <div className="bg-white border border-[#E6E8EC] rounded-[40px] overflow-hidden shadow-sm flex flex-col h-[750px]">
-                        <div className="p-8 border-b border-[#F4F4F4] flex items-center justify-between bg-white relative z-10">
-                            <h2 className="font-extrabold text-xl flex items-center gap-3">
-                                <div className="p-2 bg-blue-500/10 rounded-lg">
-                                    <LayoutGrid className="w-5 h-5 text-blue-600" />
+                    <div className="bg-surface border border-border/50 rounded-3xl overflow-hidden shadow-sm flex flex-col h-[750px] relative">
+                        <div className="p-6 border-b border-border/30 flex items-center justify-between bg-surface sticky top-0 z-10">
+                            <h2 className="font-black text-lg flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg">
+                                    <LayoutGrid className="w-5 h-5 text-primary" />
                                 </div>
                                 Mundarija
                             </h2>
-                            <span className="text-[10px] font-black px-3 py-1.5 bg-[#F0F4F9] rounded-full text-[#9A9FA5] uppercase tracking-widest">
+                            <span className="text-[10px] font-black px-3 py-1.5 bg-background border border-border/50 rounded-full text-text-muted uppercase tracking-widest tabular-nums">
                                 {lessons.length} qism
                             </span>
                         </div>
 
-                        <div className="divide-y divide-[#F4F4F4] overflow-y-auto flex-grow custom-scrollbar">
+                        <div className="divide-y divide-border/20 overflow-y-auto flex-grow custom-scrollbar">
                             {lessons.map((lesson, idx) => (
                                 <button
                                     key={lesson.id}
                                     onClick={() => setActiveLesson(lesson)}
-                                    className={`w-full p-6 flex items-start gap-5 transition-all text-left relative group ${activeLesson?.id === lesson.id
-                                        ? "bg-[var(--primary)]/[0.03] text-[var(--primary)]"
-                                        : "hover:bg-[#F0F4F9]/40 text-[#6F767E]"
+                                    className={`w-full p-6 flex items-start gap-5 text-left relative group transition-all ${activeLesson?.id === lesson.id
+                                        ? "bg-primary/[0.03]"
+                                        : "hover:bg-background/40"
                                         }`}
                                 >
                                     {activeLesson?.id === lesson.id && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[var(--primary)] rounded-r-full" />
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
                                     )}
-                                    <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm transition-colors ${activeLesson?.id === lesson.id
-                                        ? "bg-[var(--primary)] text-white shadow-lg shadow-blue-500/20"
-                                        : "bg-[#F0F4F9] text-[#9A9FA5] group-hover:bg-[#E6E8EC]"
+                                    <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all ${activeLesson?.id === lesson.id
+                                        ? "bg-primary text-white shadow-sm"
+                                        : "bg-background border border-border/50 text-text-muted group-hover:border-primary/30"
                                         }`}>
                                         {idx + 1}
                                     </div>
                                     <div className="space-y-1.5 flex-grow">
-                                        <div className={`font-bold text-sm leading-snug line-clamp-2 ${activeLesson?.id === lesson.id ? 'text-neutral-900' : ''}`}>
+                                        <div className={`font-bold text-sm leading-snug line-clamp-2 transition-colors ${activeLesson?.id === lesson.id ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                                             {lesson.title}
                                         </div>
-                                        <div className="flex items-center gap-2 text-[11px] font-semibold opacity-60">
+                                        <div className="flex items-center gap-2 text-[11px] font-bold text-text-muted opacity-60">
                                             <Clock className="w-3.5 h-3.5" />
-                                            <span>Video dars</span>
+                                            <span className="uppercase tracking-tight">Video dars</span>
                                         </div>
                                     </div>
                                     {activeLesson?.id === lesson.id && (
                                         <div className="flex-shrink-0 mt-3">
-                                            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                                                 <Play className="w-2.5 h-2.5 fill-white text-white ml-0.5" />
                                             </div>
                                         </div>
@@ -217,39 +223,23 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     </div>
 
                     {/* Instructor Widget */}
-                    <div className="bg-white border border-[#E6E8EC] p-8 rounded-[40px] shadow-sm space-y-6">
-                        <h3 className="font-extrabold text-lg">Muallif</h3>
+                    <div className="bg-surface border border-border/50 p-8 rounded-3xl shadow-sm space-y-6">
+                        <h3 className="font-black text-lg tracking-tight">Muallif</h3>
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center font-black text-2xl text-white shadow-md">
                                 L
                             </div>
                             <div>
-                                <div className="text-base font-extrabold text-neutral-900">Learnifiy School</div>
-                                <div className="text-xs font-semibold text-neutral-400">Premium o'qituvchi</div>
+                                <div className="text-base font-black text-foreground">Learnifiy School</div>
+                                <div className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Premium o'qituvchi</div>
                             </div>
                         </div>
-                        <button className="w-full py-4 bg-[#F0F4F9] hover:bg-[#E6E8EC] text-neutral-600 rounded-2xl font-bold text-sm transition-all">
+                        <button className="w-full py-4 bg-background border border-border/50 hover:border-primary/30 hover:bg-neutral-50 text-text-muted hover:text-primary rounded-xl font-bold text-sm transition-all shadow-sm">
                             Profilni ko'rish
                         </button>
                     </div>
                 </div>
             </main>
-
-            <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #E6E8EC;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #CED2D9;
-                }
-            `}</style>
         </div>
     );
 }
